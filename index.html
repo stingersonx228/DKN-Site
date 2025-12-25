@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>DKN — Predict</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-50 min-h-screen flex items-center justify-center p-6">
+  <div class="w-full max-w-2xl bg-white rounded-xl shadow p-6">
+    <h1 class="text-2xl font-bold mb-4">DKN — предсказание риска нефропатии</h1>
+    <p class="text-sm text-gray-600 mb-4">Введи данные пациента (можно по-русски, мы сопоставим):</p>
+
+    <form id="form" class="grid grid-cols-1 gap-3">
+      <div class="grid grid-cols-2 gap-3">
+        <input id="age" placeholder="возраст" class="p-2 border rounded" />
+        <select id="sex" class="p-2 border rounded">
+          <option value="0">муж</option>
+          <option value="1">жен</option>
+        </select>
+      </div>
+
+      <div class="grid grid-cols-2 gap-3">
+        <input id="glucose" placeholder="сахар (ммоль/л)" class="p-2 border rounded" />
+        <input id="blood_pressure" placeholder="давление (систол.)" class="p-2 border rounded" />
+      </div>
+
+      <div class="grid grid-cols-2 gap-3">
+        <input id="bmi" placeholder="имт" class="p-2 border rounded" />
+        <input id="diabetes_duration" placeholder="стаж_диабета (лет)" class="p-2 border rounded" />
+      </div>
+
+      <div class="grid grid-cols-2 gap-3">
+        <input id="creatinine" placeholder="креатинин" class="p-2 border rounded" />
+        <input id="albumin" placeholder="альбумин" class="p-2 border rounded" />
+      </div>
+
+      <button id="submit" type="button" class="mt-3 bg-blue-600 text-white py-2 px-4 rounded">Предсказать</button>
+    </form>
+
+    <div id="result" class="mt-4 p-3 rounded hidden"></div>
+  </div>
+
+<script>
+// адрес моего бекендика
+const API_URL = "https://dkn-ai.onrender.com"; // <- ОБЯЗАТЕЛЬНО заменить
+
+// маппинг русских полей в английские (тоже как в боте)
+const ALIAS = {
+  "возраст": "age",
+  "пол": "sex",
+  "сахар": "glucose",
+  "давление": "blood_pressure",
+  "имт": "bmi",
+  "стаж_диабета": "diabetes_duration",
+  "креатинин": "creatinine",
+  "альбумин": "albumin"
+};
+
+document.getElementById("submit").addEventListener("click", async () => {
+  const values = {
+    age: parseFloat(document.getElementById("age").value || "0"),
+    sex: parseFloat(document.getElementById("sex").value || "0"),
+    glucose: parseFloat(document.getElementById("glucose").value || "0"),
+    blood_pressure: parseFloat(document.getElementById("blood_pressure").value || "0"),
+    bmi: parseFloat(document.getElementById("bmi").value || "0"),
+    diabetes_duration: parseFloat(document.getElementById("diabetes_duration").value || "0"),
+    creatinine: parseFloat(document.getElementById("creatinine").value || "0"),
+    albumin: parseFloat(document.getElementById("albumin").value || "0")
+  };
+
+  // POST
+  try {
+    const res = await fetch(API_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ features: values })
+    });
+    const data = await res.json();
+    const rdiv = document.getElementById("result");
+    if (res.ok) {
+      rdiv.classList.remove("hidden");
+      rdiv.classList.add("bg-white", "border", "p-3");
+      rdiv.innerHTML = `<b>Риск осложнений:</b> <span class="text-xl">${(data.probability).toFixed(3)}</span><br><small>(0 — низкий риск, 1 — высокий риск)</small>`;
+    } else {
+      rdiv.classList.remove("hidden");
+      rdiv.innerHTML = `<div class="text-red-600">Ошибка: ${JSON.stringify(data)}</div>`;
+    }
+  } catch (e) {
+    const rdiv = document.getElementById("result");
+    rdiv.classList.remove("hidden");
+    rdiv.innerHTML = `<div class="text-red-600">Ошибка подключения: ${e.message}</div>`;
+  }
+});
+</script>
+</body>
+</html>
