@@ -43,8 +43,7 @@
 
 <script>
 // адрес моего бекендика
-const API_URL = "https://dkn-ai.onrender.com"; // <- ОБЯЗАТЕЛЬНО заменить
-
+const API_URL = "https://dkn-newback.onrender.com";
 // маппинг русских полей в английские (тоже как в боте)
 const ALIAS = {
   "возраст": "age",
@@ -71,7 +70,7 @@ document.getElementById("submit").addEventListener("click", async () => {
 
   // POST
   try {
-    const res = await fetch(API_URL, {
+    const res = await fetch(`${API_URL}/predict`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ features: values })
